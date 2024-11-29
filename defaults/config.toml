@@ -71,3 +71,6 @@ community = [
         repository = "chaotic-aur",
     },
 ]
+
+[logging]
+loglevel = "info"
