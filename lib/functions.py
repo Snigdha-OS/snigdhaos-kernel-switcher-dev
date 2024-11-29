@@ -1,4 +1,5 @@
 import os
+import locale
 import gi
 from gi.repository import GLib
 gi.require_version("Gtk", "4.0")
@@ -53,3 +54,18 @@ event_log_file = "%s/event.log" %log_dir
 
 # Configuration Specified
 config_file_default = "%s/defaults/config.toml"
+config_dir = "%s/.config/snigdhaos-kernel-switcher" %home
+config_file = "%s/.config/snigdhaos-kernel-switcher/config.toml" %home
+
+# Logger/Logging Specified
+logger = logging.getLogger("logger")
+ch = logging.StreamHandler()
+formatter = logging.Formatter("%(asctime)s:%(levelname)s > %(message)s", "%Y-%m-%d %H:%M:%S")
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+
+# Locale Specified
+locale.setlocale(locale.LC_ALL, "C.utf-8")
+locale_env = os.environ
+locale_env["LC_ALL"] = "C.utf-8"
+
