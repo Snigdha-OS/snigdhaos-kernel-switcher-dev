@@ -3,32 +3,32 @@ title = "Snigdha OS Kernel Switcher Settings"
 official = [
     {
         name = "linux",
-        description = "",
+        description = " The default and most commonly used Linux kernel package in Arch Linux. It provides a general-purpose kernel suitable for most users and is updated regularly with the latest stable kernel releases from upstream.",
         headers = "linux-headers"
     },
     {
         name = "linux-lts",
-        description = "",
-        headers = "linux-headers" 
+        description = "The Long-Term Support (LTS) kernel, providing extended support for a specific kernel version with a focus on stability. It does not receive feature updates but gets security and bug fixes.",
+        headers = "linux-lts-headers" 
     },
     {
         name = "linux-zen",
-        description = "",
-        headers = "linux-headers"
+        description = "A kernel optimized for desktop performance, featuring tweaks and enhancements aimed at improving responsiveness and reducing latency.",
+        headers = "linux-zen-headers"
     },
     {
         name = "linux-hardened",
-        description = "",
-        headers = "linux-headers"
+        description = "A security-focused kernel with additional patches and configurations to enhance system security. It emphasizes hardening techniques against vulnerabilities and exploits.",
+        headers = "linux-hardened-headers"
     },
     {
-        name = "linux-hardened",
-        description = "",
-        headers = "linux-headers"
+        name = "linux-rt",
+        description = "A real-time kernel with patches that prioritize low-latency and determinism, designed for use in applications requiring real-time performance (e.g., audio production, robotics).",
+        headers = "linux-rt-headers"
     },
     {
-        name = "linux-hardened",
-        description = "",
-        headers = "linux-headers"
-    }
+        name = "linux-rt-lts",
+        description = "A real-time kernel with patches that prioritize low-latency and determinism, designed for use in applications requiring real-time performance (e.g., audio production, robotics) with Long Term Support.",
+        headers = "linux-rt-lts-headers"
+    },
 ]
