@@ -32,3 +32,42 @@ official = [
         headers = "linux-rt-lts-headers"
     },
 ]
+
+community = [
+    {
+        name = "linux-xanmod",
+        description = "A kernel fork designed to offer more cutting-edge features and optimizations, particularly for gaming and desktop performance.",
+        headers = "linux-xanmod-headers",
+        repository = "chaotic-aur",
+    },
+    {
+        name = "linux-xanmod-lts",
+        description = "A kernel fork designed to offer more cutting-edge features and optimizations, particularly for gaming and desktop performance with Long Term Support",
+        headers = "linux-xanmod-lts-headers",
+        repository = "chaotic-aur",
+    },
+    {
+        name = "linux-cachyos",
+        description = "The Linux BORE + LTO + Cachy Sauce Kernel by CachyOS with other patches and improvements. kernel and modules",
+        headers = "linux-cachyos-headers",
+        repository = "chaotic-aur",
+    },
+    {
+        name = "linux-clear",
+        description = "Linux kernel with patches from Clear Linux which allow for higher performance. This package includes the kernel and compiled modules.",
+        headers = "linux-clear-headers",
+        repository = "chaotic-aur",
+    },
+    {
+        name = "linux-lqx",
+        description = "The Linux Liquorix kernel and modules.",
+        headers = "linux-lqx-headers",
+        repository = "chaotic-aur",
+    },
+    {
+        name = "linux-nitrous",
+        description = "Modified Linux kernel optimized for Skylake X and newer, compiled using clang.",
+        headers = "linux-nitrous-headers",
+        repository = "chaotic-aur",
+    },
+]
