@@ -1,0 +1,34 @@
+title = "Snigdha OS Kernel Switcher Settings"
+[kernels]
+official = [
+    {
+        name = "linux",
+        description = "",
+        headers = "linux-headers"
+    },
+    {
+        name = "linux-lts",
+        description = "",
+        headers = "linux-headers" 
+    },
+    {
+        name = "linux-zen",
+        description = "",
+        headers = "linux-headers"
+    },
+    {
+        name = "linux-hardened",
+        description = "",
+        headers = "linux-headers"
+    },
+    {
+        name = "linux-hardened",
+        description = "",
+        headers = "linux-headers"
+    },
+    {
+        name = "linux-hardened",
+        description = "",
+        headers = "linux-headers"
+    }
+]
