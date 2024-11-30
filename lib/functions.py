@@ -3,6 +3,8 @@ import locale
 import datetime
 import requests
 import subprocess
+from queue import Queue
+from threading import Thread
 import gi
 from gi.repository import GLib
 gi.require_version("Gtk", "4.0")
@@ -83,7 +85,35 @@ def permissions(dst):
     except Exception as e:
         logger.error("Found Error on permissions(). Exception: %s", e)
 
-def refresh_cache(self):
+def get_response(session,linux_kernel,response_queue,response_content):
+    response = requests.get("%s/packages/l/%s" % (archlinux_mirror_archive_url, linux_kernel), headers=headers,allow_redirects=True,timeout=60,stream=True)
+    if response.status_code == 200:
+        if logger.getEffectiveLevel() == 10:
+            logger.debug("Response Code For %s/packages/l/%s = 200 | OK" % (archlinux_mirror_archive_url,linux_kernel))
+        if response.text is not None:
+            response_content[linux_kernel] = response.text
+            response_queue.put(response_content)
+    else:
+        logger.error("Request Failed!")
+        logger.error(response.text)
+        response_queue.put(None)
+
+def refreshCache(self):
+    cached_kernel_list.clear()
+    if os.path.exists(cache_file):
+        os.remove(cache_file)
+    getOfficialKernels(self)
+    writeCache()
+
+def getOfficialKernels(self):
+    try:
+        if not os.path.exists(cache_file) or self.refreshCache is True:
+            session = requests.session()
+            response_queue = Queue()
+            response_content = {}
+            for linux_kernel in supported_kernel_dict:
+                logger.info("Fetching Data: %s/packages/l/%s"%(archlinux_mirror_archive_url, linux_kernel))
+                Thread(target=get_response,args=(session,linux_kernel,response_queue,response_content), daemon=True).start()
 
 # Get Kernel Update
 def getLatestKernelUpdate(self):
@@ -122,7 +152,7 @@ def getLatestKernelUpdate(self):
                                 logger.info("Linux Kernel Last Update: %s" % datetime.datetime.strptime(response.json()["results"][0]["last_update"], "%Y-%m-%dT%H:%M:%S.%f%z").date())
                                 if (datetime.datetime.strptime(response.json()["results"][0]["last_update"], "%Y-%m-%dT%H:%M:%S.%f%z").date() >= datetime.datetime.strptime(cache_timestamp, "%Y-%m-%d %H-%M-%S").date()):
                                     logger.info("Linux Package Has Been Updated!")
-                                    refresh_cache(self)
+                                    refreshCache(self)
                                     return True
                                 else:
                                     logger.info("Linux Kernel Could Not Be Updated!")
