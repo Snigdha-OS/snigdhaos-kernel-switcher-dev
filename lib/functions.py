@@ -1,5 +1,8 @@
 import os
 import locale
+import datetime
+import requests
+import subprocess
 import gi
 from gi.repository import GLib
 gi.require_version("Gtk", "4.0")
@@ -69,3 +72,77 @@ locale.setlocale(locale.LC_ALL, "C.utf-8")
 locale_env = os.environ
 locale_env["LC_ALL"] = "C.utf-8"
 
+def permissions(dst):
+    try:
+        groups = subprocess.run(["sh", "-c", "id " + sudo_username],shell=False,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,env=locale_env)
+        for x in groups.stdout.decode().split(" "):
+            if "gid" in x:
+                g = x.split("(")[1]
+                group = g.replace(")", "").strip()
+        subprocess.call(["chown", "-R", sudo_username + ":" + group, dst],shell=False,env=locale_env)
+    except Exception as e:
+        logger.error("Found Error on permissions(). Exception: %s", e)
+
+def refresh_cache(self):
+
+# Get Kernel Update
+def getLatestKernelUpdate(self):
+    logger.info("Fetching Latest Kernel Versions...")
+    try:
+        last_update_check = None
+        fetch_update = False
+        cache_timestamp = None
+        if os.path.exists(cache_file):
+            with open(cache_file, "r", encoding="utf-8") as f:
+                data = f.readlines()[2]
+                if len(data) == 0:
+                    logger.error("%s empty! Delete and ReOpen the app!" % cache_file)
+                if len(data) > 0 and "timestamp" in data.strip():
+                    cache_timestamp = data.split("timestamp = ")[1].replace('"', "").strip()
+            if not os.path.exists(cache_update):
+                last_update_check = datetime.datetime.now().strftime("%y-%m-%d")
+                with open(cache_update, mode="w", encoding="utf-8") as f:
+                    f.write("%s\n" % last_update_check)
+                permissions(cache_dir)
+                0
+            else:
+                with open(cache_update, mode="r", encoding="utf-8") as f:
+                    last_update_check = f.read().strip()
+                with open(cache_update, mode="w", encoding="utf-8") as f:
+                    f.write("%s\n" % datetime.datetime.now().strftime("%Y-%m-%d"))
+                permissions(cache_dir)
+            logger.info("Last Update Fetch On: %s" % datetime.datetime.now().strptime(last_update_check, "%Y-%m-%d").date())
+            if (datetime.datetime.strptime(last_update_check, "%Y-%m-%d").date() < datetime.datetime.now().date()):
+                logger.info("Fetching Linux Package Update Data...")
+                response = requests.get(latest_archlinux_package_search_url.replace("${PACKAGE_NAME}", "linux"),headers=headers,allow_redirects=True,timeout=60,stream=True)
+                if response.status_code == 200:
+                    if response.json() is not None:
+                        if len(response.json()["results"]) > 0:
+                            if response.json()["results"][0]["last_update"]:
+                                logger.info("Linux Kernel Last Update: %s" % datetime.datetime.strptime(response.json()["results"][0]["last_update"], "%Y-%m-%dT%H:%M:%S.%f%z").date())
+                                if (datetime.datetime.strptime(response.json()["results"][0]["last_update"], "%Y-%m-%dT%H:%M:%S.%f%z").date() >= datetime.datetime.strptime(cache_timestamp, "%Y-%m-%d %H-%M-%S").date()):
+                                    logger.info("Linux Package Has Been Updated!")
+                                    refresh_cache(self)
+                                    return True
+                                else:
+                                    logger.info("Linux Kernel Could Not Be Updated!")
+                                    return False
+                else:
+                    logger.error("Failed To Fetch Valid Response Code!")
+                    logger.error(response.text)
+            else:
+                logger.info("Kernel Update Check Not Required!")
+                return False
+        else:
+            logger.info("No Cache File Found! Refresh The Page!")
+            if not os.path.exists(cache_update):
+                last_update_check = datetime.datetime.now().strftime("%Y-%m-%d")
+                with open(cache_update, mode="w", encoding="utf-8") as f:
+                    f.write("%s\n" % last_update_check)
+                permissions(cache_dir)
+            return False
+    except Exception as e:
+        logger.error("Found Error on getLatetsKernelUpdate(). Exception: %s" %e)
+        return True
+
+                            
