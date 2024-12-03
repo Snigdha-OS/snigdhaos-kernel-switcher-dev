@@ -10,6 +10,7 @@ import sys
 import gi
 from gi.repository import Gtk
 gi.require_version("Gtk", "3.0")
+from Kernel import Kernel, CommunityKernel, InstalledKernel
 
 BaseDir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 SudoUsername = os.getlogin()
@@ -133,8 +134,14 @@ def writeCache():
     except Exception as e:
         logger.error("Found error in write_cache() ! Type: %s" % e)
 
-CacheDays = 5
 CachedKernelsList = []
+def refreshCache(self):
+    CachedKernelsList.clear()
+    if os.path.exists(CacheFile):
+        os.remove(CacheFile)
+    get_official_kernels(self)
+
+CacheDays = 5
 def readCache(self):
     try:
         self.timestamp = None
@@ -156,7 +163,7 @@ def readCache(self):
                     delta = datetime.datetime.now() - self.timestamp
                     if delta.days >= CacheDays:
                         logger.info("Cache is older than 5 days, refreshing ..")
-                        refresh_cache(self)
+                        refreshCache(self)
                     else:
                         if delta.days > 0:
                             logger.debug("Cache is %s days old" % delta.days)
@@ -183,3 +190,5 @@ def readCache(self):
                 logger.error("Failed to read cache file")
     except Exception as e:
         logger.error("Exception in read_cache(): %s" % e)
+
+def getOfficialKernels(self):
