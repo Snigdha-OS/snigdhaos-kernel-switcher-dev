@@ -219,7 +219,7 @@ def getOfficialKernels(self):
             waitForResponse(ResponseQueue)
             session.close()
             for kernel in ResponseContent:
-                parse_archive_html(ResponseContent[kernel], kernel)
+                parseArchiveHtml(ResponseContent[kernel], kernel)
             if len(FetchedKernelsDict) > 0:
                 writeCache()
                 readCache(self)
@@ -244,7 +244,8 @@ def waitForResponse(ResponseQueue):
             break
         if len(SupportedKernelDict) == len(items):
             break
-
+        
+import re
 def parseArchiveHtml(response, LinuxKernel):
     for line in response.splitlines():
         if "<a href=" in line.strip():
