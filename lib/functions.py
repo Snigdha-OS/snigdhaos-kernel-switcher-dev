@@ -139,7 +139,7 @@ def refreshCache(self):
     CachedKernelsList.clear()
     if os.path.exists(CacheFile):
         os.remove(CacheFile)
-    get_official_kernels(self)
+    getOfficialKernels(self)
 
 CacheDays = 5
 def readCache(self):
@@ -189,6 +189,92 @@ def readCache(self):
             else:
                 logger.error("Failed to read cache file")
     except Exception as e:
-        logger.error("Exception in read_cache(): %s" % e)
+        logger.error("Found error in readCache() ! Type: %s" % e)
 
+def getResponse(session, LinuxKernel, ResponseQueue, ResponseContent):
+    response = session.get("%s/packages/l/%s" % (ArchlinuxMirrorArchiveUrl, LinuxKernel),headers=headers,allow_redirects=True,timeout=60,stream=True)
+    if response.status_code == 200:
+        if logger.getEffectiveLevel() == 10:
+            logger.debug("Response code for %s/packages/l/%s = 200 (OK)"% (ArchlinuxMirrorArchiveUrl, LinuxKernel))
+        if response.text is not None:
+            ResponseContent[LinuxKernel] = response.text
+            ResponseQueue.put(ResponseContent)
+    else:
+        logger.error("Something went wrong with the request")
+        logger.error(response.text)
+        ResponseQueue.put(None)
+
+import requests
+from queue import Queue
+from threading import Thread
 def getOfficialKernels(self):
+    try:
+        if not os.path.exists(CacheFile) or self.refreshCache is True:
+            session = requests.session()
+            ResponseQueue = Queue()
+            ResponseContent = {}
+            for LinuxKernel in SupportedKernelDict:
+                logger.info("Fetching data from %s/packages/l/%s"% (ArchlinuxMirrorArchiveUrl, LinuxKernel))
+                Thread(target=getResponse,args=(session,LinuxKernel,ResponseQueue,ResponseContent),daemon=True).start()
+            waitForResponse(ResponseQueue)
+            session.close()
+            for kernel in ResponseContent:
+                parse_archive_html(ResponseContent[kernel], kernel)
+            if len(FetchedKernelsDict) > 0:
+                writeCache()
+                readCache(self)
+                self.QueueKernels.put(CachedKernelsList)
+
+            else:
+                logger.error("Failed to retrieve Linux Kernel list")
+                self.QueueKernels.put(None)
+        else:
+            logger.debug("Reading cache file = %s" % CacheFile)
+            # read cache file
+            readCache(self)
+            self.QueueKernels.put(CachedKernelsList)
+
+    except Exception as e:
+        logger.error("Found error in getOfficialKernels() ! Type: %s" % e)
+
+def waitForResponse(ResponseQueue):
+    while True:
+        items = ResponseQueue.get()
+        if items is None:
+            break
+        if len(SupportedKernelDict) == len(items):
+            break
+
+def parseArchiveHtml(response, LinuxKernel):
+    for line in response.splitlines():
+        if "<a href=" in line.strip():
+            files = re.findall('<a href="([^"]*)', line.strip())
+            if len(files) > 0:
+                if "-x86_64" in files[0]:
+                    version = files[0].split("-x86_64")[0]
+                    file_format = files[0].split("-x86_64")[1]
+                    url = (
+                        "/packages/l/%s" % ArchlinuxMirrorArchiveUrl
+                        + "/%s" % LinuxKernel
+                        + "/%s" % files[0]
+                    )
+
+                    if ".sig" not in file_format:
+                        if len(line.rstrip().split("    ")) > 0:
+                            size = line.strip().split("    ").pop().strip()
+                        last_modified = line.strip().split("</a>").pop()
+                        for x in last_modified.split("    "):
+                            if len(x.strip()) > 0 and ":" in x.strip():
+                                # 02-Mar-2023 21:12
+                                # %d-%b-Y %H:%M
+                                last_modified = x.strip()
+
+                        headers = "%s%s" % (SupportedKernelDict[LinuxKernel][1],version.replace(LinuxKernel, ""))
+                        if (version is not None and url is not None and headers is not None and file_format == ".pkg.tar.zst" and datetime.datetime.now().year - datetime.datetime.strptime(last_modified, "%d-%b-%Y %H:%M").year <= 2):
+                            ke = Kernel(LinuxKernel,headers,version,size,last_modified,file_format)
+                            FetchedKernelsDict[version] = ke
+                version = None
+                file_format = None
+                url = None
+                size = None
+                last_modified = None
