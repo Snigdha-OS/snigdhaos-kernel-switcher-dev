@@ -25,11 +25,13 @@ jobs:
         chmod 644 ~/.ssh/known_hosts
         # Add GitLab's host key to known_hosts
         ssh-keyscan -H gitlab.com >> ~/.ssh/known_hosts
+        # Verify permissions of the .ssh directory and files
+        ls -al ~/.ssh
 
     # Step 3: Test SSH Connection (Debugging)
-    - name: Test SSH Connection
+    - name: Test SSH Connection with Verbose Output
       run: |
-        ssh -vT git@gitlab.com
+        ssh -vT git@gitlab.com || exit 1  # Ensure the error code is returned if it fails
 
     # Step 4: Push to GitLab
     - name: Push to GitLab
