@@ -224,16 +224,13 @@ def getOfficialKernels(self):
                 writeCache()
                 readCache(self)
                 self.QueueKernels.put(CachedKernelsList)
-
             else:
                 logger.error("Failed to retrieve Linux Kernel list")
                 self.QueueKernels.put(None)
         else:
             logger.debug("Reading cache file = %s" % CacheFile)
-            # read cache file
             readCache(self)
             self.QueueKernels.put(CachedKernelsList)
-
     except Exception as e:
         logger.error("Found error in getOfficialKernels() ! Type: %s" % e)
 
@@ -254,12 +251,7 @@ def parseArchiveHtml(response, LinuxKernel):
                 if "-x86_64" in files[0]:
                     version = files[0].split("-x86_64")[0]
                     file_format = files[0].split("-x86_64")[1]
-                    url = (
-                        "/packages/l/%s" % ArchlinuxMirrorArchiveUrl
-                        + "/%s" % LinuxKernel
-                        + "/%s" % files[0]
-                    )
-
+                    url = ("/packages/l/%s" % ArchlinuxMirrorArchiveUrl + "/%s" % LinuxKernel + "/%s" % files[0])
                     if ".sig" not in file_format:
                         if len(line.rstrip().split("    ")) > 0:
                             size = line.strip().split("    ").pop().strip()
@@ -269,7 +261,6 @@ def parseArchiveHtml(response, LinuxKernel):
                                 # 02-Mar-2023 21:12
                                 # %d-%b-Y %H:%M
                                 last_modified = x.strip()
-
                         headers = "%s%s" % (SupportedKernelDict[LinuxKernel][1],version.replace(LinuxKernel, ""))
                         if (version is not None and url is not None and headers is not None and file_format == ".pkg.tar.zst" and datetime.datetime.now().year - datetime.datetime.strptime(last_modified, "%d-%b-%Y %H:%M").year <= 2):
                             ke = Kernel(LinuxKernel,headers,version,size,last_modified,file_format)
