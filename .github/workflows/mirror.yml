@@ -12,7 +12,11 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-
+    
+    - name: Test SSH Connection
+      run: |
+        ssh -vT git@gitlab.com
+    
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
@@ -25,4 +29,3 @@ jobs:
         git remote add gitlab git@gitlab.com:Snigdha-OS/snigdhaos-applications/snigdhaos-kernel-switcher-dev.git
         git push --mirror gitlab
 
-        
