@@ -10,13 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # Step 1: Checkout the GitHub repository
     - name: Checkout Repository
       uses: actions/checkout@v3
-    
+
+    # Step 2: Test SSH connection to GitLab (Debugging)
     - name: Test SSH Connection
       run: |
         ssh -vT git@gitlab.com
-    
+
+    # Step 3: Set up SSH for GitLab access
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
@@ -24,8 +27,8 @@ jobs:
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 
+    # Step 4: Push the code to GitLab
     - name: Push to GitLab
       run: |
         git remote add gitlab git@gitlab.com:Snigdha-OS/snigdhaos-applications/snigdhaos-kernel-switcher-dev.git
         git push --mirror gitlab
-
