@@ -6,7 +6,7 @@
 # Define the conventional commit types with new emojis
 TYPES=("🚀 feat" "🐛 fix" "📝 docs" "✨ style" "🛠 refactor" "⚡️ perf" "🔬 test" "🔧 build" "🤖 ci" "🧹 chore" "⏪ revert")
 
-# Function to display an error and exit
+# Function to display an error and exit and
 error_exit() {
     echo -e "\033[1;31m[ERROR]\033[0m $1"
     exit 1
